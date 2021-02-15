@@ -6,22 +6,27 @@ import (
 )
 
 
-// Use http.Handler to check URL path to implement multiplexer (mux)
-type foo int 
-func(f foo) ServeHTTP (res http.ResponseWriter, req *http.Request){
-	path := req.URL.Path
-	switch path {
-	case "/case1":
-		fmt.Fprint(res, "This is case1")
-	case "/case2":
-		fmt.Fprint(res, "This is case2")
-	default:
-		fmt.Fprintf(res, "Server does not support this endpoint(%s).\nServer only supports '/case1' & '/case2'", path)
-	}
+// Use http.ServeMux to implement multiplexer (mux) routing.
+
+type case1 int
+
+type case2 int
+
+func (c case1) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	fmt.Fprint(res, "This is case1")
 }
 
+func (c case2) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	fmt.Fprint(res, "This is case2")
+}
+
+
 func main() {
-	http.ServeMux
-	var f foo
-	http.ListenAndServe(":1234", f)
+	mux := http.NewServeMux()
+	var c1 case1
+	var c2 case2
+	mux.Handle("/case1", c1)
+	mux.Handle("/case2", c2)
+	
+	http.ListenAndServe(":1234", mux)
 }
